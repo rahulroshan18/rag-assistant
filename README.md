@@ -1,186 +1,327 @@
-RAG Assistant
+# 📚 Enterprise RAG Assistant
 
-A command-line Retrieval-Augmented Generation (RAG) assistant that answers natural-language questions about a résumé PDF. Instead of relying on a language model's general knowledge, it retrieves the most relevant passages from the résumé and grounds GPT's answer in that retrieved context.
+An enterprise-style **Retrieval-Augmented Generation (RAG)** application built using **Python**, **OpenAI Embeddings**, and **ChromaDB**. This project demonstrates how AI systems can retrieve relevant information from custom documents using semantic search before generating responses.
 
-Why RAG?
+Instead of relying solely on an LLM's training data, the assistant retrieves the most relevant document context, improving response accuracy and reducing hallucinations.
 
-Large language models don't know the contents of your private documents out of the box. RAG closes that gap by:
+---
 
+# 📌 Project Overview
 
-Breaking a source document into small, searchable chunks
-Converting those chunks into vector embeddings that capture meaning, not just keywords
-Storing the vectors in a vector database
-At query time, embedding the user's question and retrieving the most semantically similar chunks
-Feeding those chunks to an LLM as context so it answers using facts actually present in the document
+Large Language Models have limited knowledge of private or enterprise documents. Retrieval-Augmented Generation (RAG) solves this problem by combining document retrieval with AI-generated responses.
 
+This project implements a complete RAG pipeline that:
 
-This keeps answers accurate and traceable to the source material, and avoids hallucinated details.
+- Loads PDF documents
+- Extracts text
+- Splits documents into semantic chunks
+- Generates vector embeddings
+- Stores embeddings in ChromaDB
+- Performs semantic similarity search
+- Retrieves the most relevant context for answering questions
 
-Tech stack
+---
 
-ComponentToolLanguagePythonPDF parsingPyPDFEmbeddingsOpenAI Embeddings APIVector databaseChromaDBAnswer generationOpenAI GPT-5
+# 🏗 Architecture
 
-Features
+```
+               PDF Document
+                     │
+                     ▼
+              PDF Loader
+                     │
+                     ▼
+            Text Extraction
+                     │
+                     ▼
+              Text Chunking
+                     │
+                     ▼
+         OpenAI Embeddings
+                     │
+                     ▼
+          ChromaDB Vector Store
+                     │
+                     ▼
+              User Question
+                     │
+                     ▼
+        Generate Query Embedding
+                     │
+                     ▼
+          Semantic Search
+                     │
+                     ▼
+       Retrieve Best Chunks
+                     │
+                     ▼
+             AI Response
+```
 
+---
 
-PDF ingestion — extracts text from a résumé PDF
-Intelligent text chunking — splits text into coherent, appropriately sized segments
-Semantic embeddings — converts each chunk into a vector representation
-Vector search — retrieves the most relevant chunks for a given question via ChromaDB
-Natural language querying — ask questions from the command line and get grounded, GPT-generated answers
+# 🚀 Features
 
+- 📄 PDF document loading
+- 📝 Automatic text extraction
+- ✂ Intelligent text chunking
+- 🧠 OpenAI embedding generation
+- 🗂 ChromaDB vector database integration
+- 🔍 Semantic similarity search
+- 📑 Context retrieval using embeddings
+- ⚡ Reduced token usage through targeted retrieval
+- 🏗 Modular and extensible project architecture
 
-Architecture
+---
 
-PDF → Chunking → Embeddings → ChromaDB → Semantic Search → GPT Answer
+# 🧠 Key AI Concepts
 
-At a glance, the project separates the RAG pipeline into independent stages, each with its own module:
+## PDF Loader
 
+Extracts text from PDF documents using PyPDF.
+
+---
+
+## Text Chunking
+
+Large documents are divided into smaller chunks to preserve context while enabling efficient retrieval.
+
+Benefits:
+
+- Better semantic matching
+- Lower embedding costs
+- Improved retrieval accuracy
+- Reduced LLM token consumption
+
+---
+
+## Embeddings
+
+Each text chunk is converted into a numerical vector using OpenAI Embeddings.
+
+Embeddings capture semantic meaning instead of relying on exact keyword matches.
+
+---
+
+## ChromaDB
+
+Stores vector embeddings for fast similarity search.
+
+Instead of scanning the entire document, the system retrieves only the most relevant chunks.
+
+---
+
+## Semantic Search
+
+When a user submits a question:
+
+1. The query is converted into an embedding.
+2. ChromaDB compares it against stored document embeddings.
+3. The closest matching chunks are retrieved.
+4. The retrieved context is supplied to the LLM.
+
+This approach significantly improves answer relevance compared to traditional keyword search.
+
+---
+
+# 🔄 Workflow
+
+1. Load PDF document.
+2. Extract text.
+3. Split text into semantic chunks.
+4. Generate embeddings for each chunk.
+5. Store embeddings in ChromaDB.
+6. Receive user query.
+7. Generate query embedding.
+8. Perform semantic similarity search.
+9. Retrieve relevant context.
+10. Generate AI response.
+
+---
+
+# 📂 Project Structure
+
+```
 rag-assistant/
-├── loaders/          # Reads the PDF and extracts raw text
-├── chunking/          # Splits extracted text into smaller chunks
-├── embeddings/         # embedder.py — turns text into vectors via OpenAI
-│   └── embedder.py
-├── vectorstore/        # chroma_store.py — stores/searches vectors in ChromaDB
+│
+├── chunking/
+│   └── text_chunker.py
+│
+├── embeddings/
+│   └── embedding_generator.py
+│
+├── loaders/
+│   └── pdf_loader.py
+│
+├── vectorstore/
 │   └── chroma_store.py
-├── services/           # rag_service.py — builds the prompt and calls GPT-5
-│   └── rag_service.py
-├── data/                # Source documents (e.g. the résumé PDF)
-├── query.py            # CLI entry point — ties the pipeline together
+│
+├── data/
+│
+├── app.py
 ├── requirements.txt
-├── test_loader.py
-├── test_chunker.py
-├── test_embedding.py
-├── test_chroma.py
-└── README.md
+├── README.md
+├── .gitignore
+├── .env.example
+└── tests/
+```
 
-How it works
+---
 
-1. Ingestion (build the knowledge base)
+# ⚙ Technologies Used
 
-Before you can query anything, the résumé needs to be processed once:
+- Python 3.13
+- OpenAI Embeddings
+- ChromaDB
+- PyPDF
+- python-dotenv
 
+---
 
-loaders/ reads the PDF and extracts its raw text using PyPDF
-chunking/ splits that text into smaller, semantically coherent chunks so each one stays focused and within embedding token limits
-embeddings/embedder.py sends each chunk to the OpenAI Embeddings API and gets back a vector
-vectorstore/chroma_store.py stores each chunk's vector (plus the original text) in a ChromaDB collection
+# 🛠 Installation
 
+Clone the repository:
 
-2. Querying (ask a question)
+```bash
+git clone https://github.com/rahulroshan18/rag-assistant.git
 
-query.py is the entry point for asking questions once the knowledge base exists:
-
-pythonfrom embeddings.embedder import create_embedding
-from vectorstore.chroma_store import search
-from services.rag_service import answer_question
-
-question = input("Ask me about Rahul's resume: ")
-query_embedding = create_embedding(question)
-results = search(query_embedding)
-context = "\n\n".join(results["documents"][0])
-answer = answer_question(question, context)
-
-print("\nAnswer:\n")
-print(answer)
-
-The flow, step by step:
-
-
-The user types a question at the prompt
-create_embedding() converts the question into a vector using the same embedding model used during ingestion
-search() queries ChromaDB for the chunks whose vectors are most similar to the question's vector
-The retrieved chunks are joined into a single context string
-answer_question() sends the question plus that context to GPT-5, which generates an answer grounded in the retrieved text
-The answer is printed to the console
-
-
-Architecture
-                ┌───────────────┐
-                │ Resume PDF    │
-                └──────┬────────┘
-                       │
-                 Load PDF
-                       │
-                Chunk Document
-                       │
-              Create Embeddings
-                       │
-                Store in ChromaDB
-                       │
-────────────────────────────────────────────
-                       │
-              User asks a question
-                       │
-             Embed the question
-                       │
-             Search ChromaDB
-                       │
-          Retrieve Top-K chunks
-                       │
-        Send chunks + question to GPT
-                       │
-               Final AI Answer
-Getting started
-
-Prerequisites
-
-
-Python 3.9+
-An OpenAI API key with access to the Embeddings API and GPT-5
-
-
-Installation
-
-bashgit clone https://github.com/rahulroshan18/rag-assistant.git
 cd rag-assistant
+```
+
+Create a virtual environment:
+
+```bash
+python3 -m venv .venv
+```
+
+Activate it:
+
+macOS/Linux
+
+```bash
+source .venv/bin/activate
+```
+
+Windows
+
+```bash
+.venv\Scripts\activate
+```
+
+Install dependencies:
+
+```bash
 pip install -r requirements.txt
+```
 
-Configuration
+---
 
-Set your OpenAI API key as an environment variable:
+# 🔐 Environment Variables
 
-bashexport OPENAI_API_KEY="your-api-key-here"
+Create a `.env` file:
 
-Add your document
+```text
+OPENAI_API_KEY=your_api_key_here
+```
 
-Place the résumé PDF you want to query inside the data/ directory.
+---
 
-Run the ingestion pipeline
+# ▶ Running the Project
 
-Process the PDF into chunks, embed them, and store them in ChromaDB (run the loading, chunking, and embedding modules over the file in data/ — see the module docstrings and tests for expected usage).
+Run the application:
 
-Ask questions
+```bash
+python3 app.py
+```
 
-bashpython query.py
+The application will:
 
-Ask me about Rahul's resume: What programming languages does Rahul know?
+- Load the PDF
+- Generate embeddings
+- Store vectors
+- Perform semantic search
+- Retrieve relevant document context
 
-Answer:
-...
+---
 
-Testing
+# 💡 AI Concepts Demonstrated
 
-Each pipeline stage has a corresponding test file:
+This project demonstrates:
 
-Test fileCoverstest_loader.pyPDF loading and text extractiontest_chunker.pyText chunking logictest_embedding.pyEmbedding generationtest_chroma.pyVector storage and search in ChromaDB
+- Retrieval-Augmented Generation (RAG)
+- Embedding Models
+- Semantic Search
+- Vector Databases
+- Document Chunking
+- Context Retrieval
+- Enterprise Knowledge Retrieval
+- Modular AI Architecture
 
-Run all tests with:
+---
 
-bashpytest
+# 📈 Future Enhancements
 
-Project status
+Planned improvements include:
 
-This is an early-stage / learning project focused on a single-document use case (one résumé). The pipeline is modular by design, so it's straightforward to extend toward:
+- Conversational RAG
+- Memory
+- Hybrid Search (Keyword + Vector)
+- Multi-document Support
+- Metadata Filtering
+- FastAPI REST API
+- Web Interface
+- Streaming Responses
+- Citation Support
+- Docker Deployment
 
+---
 
-Multi-document ingestion (multiple résumés, or other document types)
-A web or chat UI instead of the CLI prompt
-Swappable embedding models or vector stores
-Streaming answers instead of a single blocking response
-Source citation in the returned answer (which chunk/page supported which claim)
+# 🎯 Learning Outcomes
 
+This project provides practical experience in:
 
-License
+- Designing RAG pipelines
+- Working with vector databases
+- Optimizing document chunking strategies
+- Understanding semantic similarity
+- Building enterprise knowledge assistants
+- Improving LLM accuracy through retrieval
 
-No license file is currently included in the repository. Add one (e.g. MIT) if you intend for others to reuse this code.
+---
+
+# 📸 Sample Execution
+
+```
+Loading PDF...
+
+Chunking document...
+
+Generating embeddings...
+
+Saving vectors to ChromaDB...
+
+User Query:
+What experience does Rahul have in AI?
+
+Retrieved Context:
+Top 3 matching document chunks...
+
+Generating Response...
+```
+
+---
+
+# 👨‍💻 Author
+
+**Rahul Roshan**
+
+Enterprise Architect | AI Engineer | Principal System Architect
+
+GitHub:
+https://github.com/rahulroshan18
+
+---
+
+# ⭐ Support
+
+If you found this project useful, consider giving the repository a ⭐ and feel free to share feedback or suggestions.
