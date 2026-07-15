@@ -231,7 +231,7 @@ OPENAI_API_KEY=your_api_key_here
 Run the application:
 
 ```bash
-python3 app.py
+python3 query.py
 ```
 
 The application will:
